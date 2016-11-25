@@ -36,4 +36,3 @@ RUN make install
 RUN ldconfig
 
 WORKDIR /cowhub-core
-CMD ['python', './lib/rabbit.py']

@@ -2,7 +2,7 @@ import pika
 import os
 import json
 
-from .worker import Worker
+from worker import Worker
 
 HOST = os.environ['RABBIT_HOST']
 PORT = os.environ['RABBIT_PORT']

@@ -6,10 +6,10 @@ import numpy as np
 from multiprocessing import Process, Queue, cpu_count
 from Queue import Empty as QueueEmpty
 
-from .diff import calc_diff, get_descriptor
-from .crop import crop
-from .db import DbConn
-from .util import foreach
+from diff import calc_diff, get_descriptor
+from crop import crop
+from db import DbConn
+from util import foreach
 
 
 def read_base64(b64_string):
