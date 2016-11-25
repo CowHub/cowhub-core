@@ -32,7 +32,7 @@ class DbConn:
         return cursor, ThreadPool(4).imap(self._parse_data, data)
 
     def write(self, cid, descriptor):
-        pass
+        return self._conn.set('cattle_descriptor_' + cid, pickle.dumps(descriptor))
 
     def publish(self, cid, diff, server_id, request_id):
         self._conn.publish('match_result_%s' % (server_id, ), json.dumps({
