@@ -36,4 +36,4 @@ WORKDIR /cowhub-core
 
 RUN pip install -r requirements.txt
 
-CMD ['/cowhub-core/startup.sh']
+CMD ['python', './lib/rabbit.py']
