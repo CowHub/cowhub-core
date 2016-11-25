@@ -7,7 +7,7 @@ def read_image(image):
     return cv2.imread(image, 0)
 
 
-def main(image_file, show=False):
+def crop(image_file, show=False):
     image = read_image(image_file)
     if show:
         cv2.imshow('original', image)
@@ -38,4 +38,4 @@ def main(image_file, show=False):
         return smoothened_image, edges, vis
 
 if __name__ == '__main__':
-    main(sys.argv[1])
+    crop(sys.argv[1], show=True)
