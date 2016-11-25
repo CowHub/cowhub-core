@@ -5,6 +5,7 @@ import json
 from .worker import Worker
 
 HOST = os.environ['RABBIT_HOST']
+PORT = os.environ['RABBIT_PORT']
 QUEUE = 'task_queue'
 
 WORKER = Worker()

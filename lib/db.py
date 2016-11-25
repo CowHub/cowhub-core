@@ -5,9 +5,9 @@ from redis import StrictRedis
 from multiprocessing.pool import ThreadPool
 
 HOST, PORT, PASS = tuple(os.environ[s] for s in (
-    'DB_HOST',
-    'DB_PORT',
-    'DB_PASS',
+    'REDIS_HOST',
+    'REDIS_PORT',
+    'REDIS_PASS',
 ))
 
 MATCH = 'cattle_descriptor_*'
