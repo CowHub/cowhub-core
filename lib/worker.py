@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from multiprocessing import Process, Queue, cpu_count
 from Queue import Empty as QueueEmpty
+import sys
 
 from diff import calc_diff, get_descriptor
 from crop import crop
@@ -30,7 +31,7 @@ def start_worker(source_descriptor, redis_conn, iter_queue, res_queue):
         iter_id = iter_queue.get()
 
         if iter_id < 0:
-            iter_queue.pub(-1)
+            iter_queue.put(-1)
             break
 
         new_cursor, rows = redis_conn.next_group(iter_id)
@@ -61,6 +62,7 @@ class Worker:
         iter_queue = Queue(1)
         res_queue = Queue(1)
 
+        res_queue.put((-1, sys.maxint))
         workers = [Process(target=start_worker, args=(descriptor, db_conn, iter_queue, res_queue))
                    for _ in range(processes)]
         foreach(lambda x: x.start(), workers)
@@ -68,6 +70,8 @@ class Worker:
 
         try:
             (cid, diff) = res_queue.get(block=False)
+            if cid < 0:
+                raise QueueEmpty()
             db_conn.publish(cid, diff, server_id, request_id)
         except QueueEmpty:
             raise RuntimeError('No element in the result queue.')
