@@ -53,6 +53,7 @@ if __name__ == '__main__':
     d = calc_diff(source, target)
     c4 = datetime.now()
 
-    print c2 - c1
-    print c3 - c2
-    print c4 - c3
+    print "distance =", d
+    print "cropping took", c2 - c1, "s"
+    print "descriptor generation took", c3 - c2, "s"
+    print "matching took", c4 - c3, "s"
