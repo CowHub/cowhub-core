@@ -4,13 +4,20 @@ import json
 import urllib
 import boto3
 from worker import find_match
+import re
 
 s3 = boto3.client('s3')
 cache = boto3.client('elasticache')
 
+KEY_REGEX = re.compile(r'match/(?P<user_id>\w+)/(?P<match_id>\w+)/image-original')
+
 
 def lambda_handler(event, context):
     key, image = get_image(event)
+    params = None
+    for match in KEY_REGEX.finditer(key):
+        params = match.groupdict()
+        break
     request_id = key
     potential_matches = get_all_descriptor()
     match = find_match(image, potential_matches)
