@@ -10,12 +10,12 @@ def read_blob(blob):
     pimg = Image.open(sbuf)
     return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
 
-def generate_descriptor(image):
+def generate_descriptor(blob):
+    image = read_blob(blob)
     _, edge = get_edge(image)
     return get_descriptor(edge)
 
 if __name__ == "__main__":
-    image = read_blob(sys.argv[1])
-    descriptor = generate_descriptor(image)
+    descriptor = generate_descriptor(sys.argv[1])
     encoded_descriptor = pickle.dumps(descriptor)
     print(encoded_descriptor)
