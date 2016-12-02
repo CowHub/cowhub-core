@@ -7,14 +7,15 @@ from worker import generate_descriptor
 
 s3 = boto3.client('s3')
 cache = boto3.client('elasticache')
-libdir = os.path.join(os.getcwd(), 'local', 'lib')
+
 
 def lambda_handler(event, context):
     key, image = get_image(event)
     cattle_id = key
     descriptor = generate_descriptor(image)
-    response = store_decriptor(descriptor, cattle_id)
+    response = store_descriptor(descriptor, cattle_id)
     return response
+
 
 def get_image(event):
     bucket = event['Records'][0]['s3']['bucket']['name']
@@ -27,10 +28,11 @@ def get_image(event):
         print('Error getting object {} from bucket {}.'.format(key, bucket))
         raise e
 
-def store_decriptor(descriptor, cattle_id):
+
+def store_descriptor(descriptor, cattle_id):
     try:
-        response = client.add_tags_to_resource(
-            ResourceName='string', # TODO: insert correct ARN
+        response = cache.add_tags_to_resource(
+            ResourceName='string',  # TODO: insert correct ARN
             Tags=[
                 {
                     'Key': 'cattle_descriptor_' + cattle_id,

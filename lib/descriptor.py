@@ -3,6 +3,7 @@ import numpy as np
 
 cv2.ocl.setUseOpenCL(False)
 
+
 def get_descriptor(edges, harris_threshold=100):
     harris_corners = cv2.cornerHarris(edges, 4, 3, 0.04, borderType=cv2.BORDER_DEFAULT)
 

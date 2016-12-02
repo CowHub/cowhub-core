@@ -3,19 +3,20 @@ from __future__ import print_function
 import json
 import urllib
 import boto3
-from worker import generate_descriptor
+from worker import find_match
 
 s3 = boto3.client('s3')
 cache = boto3.client('elasticache')
-libdir = os.path.join(os.getcwd(), 'local', 'lib')
+
 
 def lambda_handler(event, context):
     key, image = get_image(event)
     request_id = key
-    potential_matches = get_all_desciptor()
+    potential_matches = get_all_descriptor()
     match = find_match(image, potential_matches)
-    response = store_decriptor(request_id, match)
+    response = store_match(request_id, match)
     return response
+
 
 def get_image(event):
     bucket = event['Records'][0]['s3']['bucket']['name']
@@ -28,10 +29,11 @@ def get_image(event):
         print('Error getting object {} from bucket {}.'.format(key, bucket))
         raise e
 
-def get_all_desciptor():
+
+def get_all_descriptor():
     try:
-        response = client.list_tags_for_resource(
-            ResourceName='string', # TODO: insert correct ARN
+        response = cache.list_tags_for_resource(
+            ResourceName='string',  # TODO: insert correct ARN
         )
         return response['TagList']
     except Exception as e:
@@ -39,5 +41,7 @@ def get_all_desciptor():
         print('Error retrieving all descriptor from in elasticache.')
         raise e
 
+
 def store_match(request_id, match_id):
     # TODO: write method to connect to RDS and store result
+    return None

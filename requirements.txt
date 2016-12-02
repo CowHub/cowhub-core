@@ -3,3 +3,4 @@ numpy==1.11.2
 pika==0.10.0
 redis==2.10.5
 Pillow==3.4.2
+boto3==1.4.2
