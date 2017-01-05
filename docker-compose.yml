@@ -9,11 +9,13 @@ services:
   #     - REDIS_HOST=redis
   #     - REDIS_PORT=6379
   #   command: python /cowhub-core/lib/rabbit.py
-  node:
+  ami-core:
     build:
       context: .
-      dockerfile: Dockerfile.node
+      dockerfile: Dockerfile.ami
+    command: echo 'Hello World'
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    command: echo 'Hello World'
+    volumes:
+      - .:/cowhub-core
