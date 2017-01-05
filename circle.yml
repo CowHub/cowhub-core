@@ -2,10 +2,15 @@ machine:
   environment:
     # Setting the tag for Docker-hub
     TAG: $CIRCLE_BRANCH-$CIRCLE_SHA1
-    DOCKER_IMAGE: cowhub/cowhub-server-api:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH-$CIRCLE_SHA1
+    DOCKER_IMAGE: cowhub/cowhub-core:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH-$CIRCLE_SHA1
   services:
     - docker
 
+dependencies:
+  ovverride:
+    - docker info
+
 test:
   override:
-    - docker build --rm=false -t $DOCKER_IMAGE -f Dockerfile.ami .
+    - echo $DOCKER_IMAGE
+    - docker build --rm=false -f Dockerfile.ami .
