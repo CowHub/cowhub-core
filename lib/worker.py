@@ -6,6 +6,8 @@ from PIL import Image
 import numpy as np
 import base64
 
+from functools import reduce
+
 from descriptor import get_descriptor
 from edging import get_edge
 
