@@ -38,15 +38,15 @@ RUN cmake										\
 		.
 RUN make
 
-RUN cp /cowhub-core/build/opencv/lib/cv2.so /cowhub-core/lambda-package/cv2/__init__.so
-RUN cp -L /cowhub-core/build/opencv/lib/*.so.3.1 /cowhub-core/lambda-package/cv2
-RUN strip --strip-all /cowhub-core/lambda-package/cv2/*
-RUN chrpath -r '$ORIGIN' /cowhub-core/lambda-package/cv2/__init__.so
-RUN touch /cowhub-core/lambda-package/cv2/__init__.py
-
-# Copy functions into package
-COPY lib/* lambda-package/
-
-# Zip package
-WORKDIR /cowhub-core/lambda-package
-RUN zip -r ../lambda-package.zip *
+# RUN cp /cowhub-core/build/opencv/lib/cv2.so /cowhub-core/lambda-package/cv2/__init__.so
+# RUN cp -L /cowhub-core/build/opencv/lib/*.so.3.1 /cowhub-core/lambda-package/cv2
+# RUN strip --strip-all /cowhub-core/lambda-package/cv2/*
+# RUN chrpath -r '$ORIGIN' /cowhub-core/lambda-package/cv2/__init__.so
+# RUN touch /cowhub-core/lambda-package/cv2/__init__.py
+#
+# # Copy functions into package
+# COPY lib/* lambda-package/
+#
+# # Zip package
+# WORKDIR /cowhub-core/lambda-package
+# RUN zip -r ../lambda-package.zip *

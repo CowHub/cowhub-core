@@ -2,6 +2,7 @@ machine:
   environment:
     # Setting the tag for Docker-hub
     TAG: $CIRCLE_BRANCH-$CIRCLE_SHA1
+    DOCKER_OPTS: "-s devicemapper"
     DOCKER_IMAGE: cowhub/cowhub-core:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH-$CIRCLE_SHA1
   services:
     - docker
@@ -13,4 +14,4 @@ dependencies:
 test:
   override:
     - echo $DOCKER_IMAGE
-    - docker build --rm=false -f Dockerfile.ami .
+    - docker build --privileged --rm=false -f Dockerfile.ami .
