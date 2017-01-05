@@ -1,27 +1,31 @@
 FROM amazonlinux:latest
 
-WORKDIR /cowhub-core
+WORKDIR /cowhub
+
+RUN touch tempfile
 
 # Setting up build env
 RUN yum update -y && \
     yum install -y git cmake gcc-c++ gcc python2.7-dev chrpath wget
-RUN mkdir -p /cowhub-core/lambda-package/cv2 /cowhub-core/build/numpy
+RUN mkdir -p /cowhub/lambda-package/cv2 /cowhub/build/numpy
 
 # Build numpy
 RUN python --version
 RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
-RUN pip install --prefix "/cowhub-core/build/numpy" numpy
+RUN pip install --prefix "/cowhub/build/numpy" numpy
 
-RUN cp -rf /cowhub-core/build/numpy/lib64/python2.7/site-packages/numpy /cowhub-core/lambda-package
+RUN cp -rf /cowhub/build/numpy/lib64/python2.7/site-packages/numpy /cowhub/lambda-package
 
 # Build OpenCV 3.1
-ENV NUMPY "/cowhub-core/lambda-package/numpy/core/include"
+ENV NUMPY "/cowhub/lambda-package/numpy/core/include"
 
-WORKDIR /cowhub-core/build
+WORKDIR /cowhub/build
 RUN git clone https://github.com/Itseez/opencv.git
 
-WORKDIR /cowhub-core/build/opencv
+WORKDIR /cowhub/build/opencv
 RUN git checkout 3.1.0
+RUN mkdir /cowhub/build/opencv/build
+WORKDIR /cowhub/build/opencv/build
 RUN cmake										\
 		-D CMAKE_BUILD_TYPE=RELEASE				\
 		-D WITH_TBB=ON							\
@@ -35,18 +39,18 @@ RUN cmake										\
 		-D ENABLE_FAST_MATH=ON					\
 		-D BUILD_EXAMPLES=OFF					\
 		-D PYTHON2_NUMPY_INCLUDE_DIRS="$NUMPY"	\
-		.
-RUN make
+		..
+RUN make -j8
 
-# RUN cp /cowhub-core/build/opencv/lib/cv2.so /cowhub-core/lambda-package/cv2/__init__.so
-# RUN cp -L /cowhub-core/build/opencv/lib/*.so.3.1 /cowhub-core/lambda-package/cv2
-# RUN strip --strip-all /cowhub-core/lambda-package/cv2/*
-# RUN chrpath -r '$ORIGIN' /cowhub-core/lambda-package/cv2/__init__.so
-# RUN touch /cowhub-core/lambda-package/cv2/__init__.py
+# RUN cp /cowhub/build/opencv/lib/cv2.so /cowhub/lambda-package/cv2/__init__.so
+# RUN cp -L /cowhub/build/opencv/lib/*.so.3.1 /cowhub/lambda-package/cv2
+# RUN strip --strip-all /cowhub/lambda-package/cv2/*
+# RUN chrpath -r '$ORIGIN' /cowhub/lambda-package/cv2/__init__.so
+# RUN touch /cowhub/lambda-package/cv2/__init__.py
 #
 # # Copy functions into package
 # COPY lib/* lambda-package/
 #
 # # Zip package
-# WORKDIR /cowhub-core/lambda-package
+# WORKDIR /cowhub/lambda-package
 # RUN zip -r ../lambda-package.zip *

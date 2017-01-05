@@ -11,3 +11,5 @@ services:
       - REDIS_PASS=lightningcat
       - RABBIT_HOST=146.169.46.196
       - RABBIT_PORT=5672
+    volumes:
+      - ./corevolume:/cowhub
