@@ -15,12 +15,10 @@ test:
     - mkdir -p publish
     - cp -r lib/* publish/
     - cp -r package/* publish/
-    - cd publish && zip -r lamdba_package.zip .
+    - cd publish && zip -r lambda_package.zip .
 
 deployment:
   production:
     branch: aws-lambda-redo
     commands:
-      - pwd
-      - ls -al
       - cp -r publish/lambda_package.zip $CIRCLE_ARTIFACTS/
