@@ -2,7 +2,6 @@ machine:
   environment:
     # Setting the tag for Docker-hub
     TAG: $CIRCLE_BRANCH-$CIRCLE_SHA1
-    DOCKER_OPTS: "-s devicemapper"
     DOCKER_IMAGE: cowhub/cowhub-core:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH-$CIRCLE_SHA1
   services:
     - docker
@@ -13,5 +12,12 @@ dependencies:
 
 test:
   override:
-    - echo $DOCKER_IMAGE
-    - docker build --privileged --rm=false -f Dockerfile.ami .
+    - mkdir -p publish
+    - cp -r lib/* publish/
+    - cp -r package/* publish/
+    - cd publish && zip -r lamdba_package.zip .
+
+deployment:
+  branch: aws-lambda-redo
+  commands:
+    - cp -r lambda_package.zip $CIRCLE_ARTIFACTS/
