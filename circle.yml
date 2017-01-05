@@ -14,4 +14,4 @@ deployment:
     branch: aws-lambda-redo
     commands:
       - cp -r publish/lambda_package.zip $CIRCLE_ARTIFACTS/
-      - aws lambda update-function-code --function-name cowhub-image-register --zip-file fileb://$PWD/publish/lambda_package.zip
+      - aws lambda update-function-code --region eu-west-1 --function-name cowhub-image-register --zip-file fileb://$PWD/publish/lambda_package.zip
