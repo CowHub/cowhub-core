@@ -13,4 +13,3 @@ services:
       - RABBIT_HOST=146.169.46.196
       - RABBIT_PORT=5672
 
-    command: python /cowhub-core/lib/rabbit.py
