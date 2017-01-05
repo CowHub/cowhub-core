@@ -3,5 +3,6 @@ version: '2'
 services:
   core:
     build: .
+    command: cp -r /cowhub/* /core
     volumes:
-      - ./corevolume:/cowhub
+      - ./core:/core
