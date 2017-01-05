@@ -7,7 +7,7 @@ machine:
     - docker
 
 dependencies:
-  ovverride:
+  override:
     - docker info
 
 test:
