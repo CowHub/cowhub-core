@@ -1,14 +1,18 @@
 import boto3
-import redis
 import pickle
 from functools import reduce
+from rediscluster import StrictRedisCluster
+import elasticache_auto_discovery
 
 from worker import calc_diff
 
 client = boto3.client('lambda')
-elastic_end_point = ''  # TODO: fill in
+elastic_ip = ''  # TODO: fill in
 elastic_port = ''
-redis_conn = redis.StrictRedis(elastic_end_point, elastic_port)
+elastic_endpoint = '%s:%s' % (elastic_ip, elastic_port)
+nodes = elasticache_auto_discovery.discover(elastic_endpoint)
+nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
+redis_conn = StrictRedisCluster(elastic_ip, elastic_port)
 
 MATCH = 'cattle_image_id_*'
 LAMBDA_COUNT = 25
