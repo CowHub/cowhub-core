@@ -1,0 +1,16 @@
+FROM node:7.2.1
+
+MAINTAINER freddie.a.lindsey@gmail.com
+
+WORKDIR /cowhub-core
+
+# Install yarn
+RUN wget https://yarnpkg.com/install.sh && chmod +x install.sh && ./install.sh
+
+# Install packages
+COPY package.json ./
+COPY yarn.lock ./
+RUN ~/.yarn/bin/yarn install
+
+# Project
+COPY . /cowhub-core

@@ -3,9 +3,17 @@ version: '2'
 services:
   redis:
     image: redis
-  core:
-    build: .
+  # core:
+  #   build: .
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #   command: python /cowhub-core/lib/rabbit.py
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    command: python /cowhub-core/lib/rabbit.py
+    command: echo 'Hello World'
