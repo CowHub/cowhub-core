@@ -1,14 +1,6 @@
-machine:
-  environment:
-    # Setting the tag for Docker-hub
-    TAG: $CIRCLE_BRANCH-$CIRCLE_SHA1
-    DOCKER_IMAGE: cowhub/cowhub-core:$CIRCLE_BUILD_NUM-$CIRCLE_BRANCH-$CIRCLE_SHA1
-  services:
-    - docker
-
 dependencies:
   override:
-    - docker info
+    - pip install aws
 
 test:
   override:
@@ -22,3 +14,7 @@ deployment:
     branch: aws-lambda-redo
     commands:
       - cp -r publish/lambda_package.zip $CIRCLE_ARTIFACTS/
+      - |
+        aws update-function-code
+          --function-name cowhub-image-register
+          --zip-file fileb://$PWD/publish/lambda_package.zip
