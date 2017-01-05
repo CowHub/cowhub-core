@@ -18,6 +18,7 @@ test:
     - cd publish && zip -r lamdba_package.zip .
 
 deployment:
-  branch: aws-lambda-redo
-  commands:
-    - cp -r lambda_package.zip $CIRCLE_ARTIFACTS/
+  production:
+    branch: aws-lambda-redo
+    commands:
+      - cp -r lambda_package.zip $CIRCLE_ARTIFACTS/
