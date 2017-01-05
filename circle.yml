@@ -13,4 +13,4 @@ dependencies:
 test:
   override:
     - echo $DOCKER_IMAGE
-    - docker build --rm=false -f Dockerfile.ami . ; echo 'BUILD FINISHED CHECK FOR ERRORS'
+    - docker build --rm=false -f Dockerfile.ami .

@@ -4,22 +4,25 @@ WORKDIR /cowhub-core
 
 # Setting up build env
 RUN yum update -y && \
-    yum install -y git cmake gcc-c++ gcc python python-devel chrpath wget
-RUN mkdir -p ./lambda-package/cv2 ./build/numpy
+    yum install -y git cmake gcc-c++ gcc python2.7-dev chrpath wget
+RUN mkdir -p /cowhub-core/lambda-package/cv2 /cowhub-core/build/numpy
 
 # Build numpy
+RUN python --version
 RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
-RUN pip install --install-option="--prefix=$PWD/build/numpy" numpy
-RUN cp -rf ./build/numpy/lib64/python2.7/site-packages/numpy ./lambda-package
+RUN pip install --prefix "/cowhub-core/build/numpy" numpy
+
+RUN cp -rf /cowhub-core/build/numpy/lib64/python2.7/site-packages/numpy /cowhub-core/lambda-package
 
 # Build OpenCV 3.1
-RUN (
-	NUMPY=/cowhub-core/lambda-package/numpy/core/include
-	cd ./build
-	git clone https://github.com/Itseez/opencv.git
-	cd ./opencv
-	git checkout 3.1.0
-	cmake										\
+ENV NUMPY "/cowhub-core/lambda-package/numpy/core/include"
+
+WORKDIR /cowhub-core/build
+RUN git clone https://github.com/Itseez/opencv.git
+
+WORKDIR /cowhub-core/build/opencv
+RUN git checkout 3.1.0
+RUN cmake										\
 		-D CMAKE_BUILD_TYPE=RELEASE				\
 		-D WITH_TBB=ON							\
 		-D WITH_IPP=ON							\
@@ -33,16 +36,17 @@ RUN (
 		-D BUILD_EXAMPLES=OFF					\
 		-D PYTHON2_NUMPY_INCLUDE_DIRS="$NUMPY"	\
 		.
-	make
-)
+RUN make
 
-RUN cp ./build/opencv/lib/cv2.so ./lambda-package/cv2/__init__.so
-RUN cp -L ./build/opencv/lib/*.so.3.1 ./lambda-package/cv2
-RUN strip --strip-all ./lambda-package/cv2/*
-RUN chrpath -r '$ORIGIN' ./lambda-package/cv2/__init__.so
-RUN touch ./lambda-package/cv2/__init__.py
+RUN cp /cowhub-core/build/opencv/lib/cv2.so /cowhub-core/lambda-package/cv2/__init__.so
+RUN cp -L /cowhub-core/build/opencv/lib/*.so.3.1 /cowhub-core/lambda-package/cv2
+RUN strip --strip-all /cowhub-core/lambda-package/cv2/*
+RUN chrpath -r '$ORIGIN' /cowhub-core/lambda-package/cv2/__init__.so
+RUN touch /cowhub-core/lambda-package/cv2/__init__.py
 
-# Copy template function and zip package
-RUN cp template.py lambda-package/lambda_function.py
+# Copy functions into package
+COPY lib/* lambda-package/
+
+# Zip package
 WORKDIR /cowhub-core/lambda-package
 RUN zip -r ../lambda-package.zip *
