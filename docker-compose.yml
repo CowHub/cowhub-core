@@ -3,19 +3,23 @@ version: '2'
 services:
   redis:
     image: redis
-  # core:
-  #   build: .
-  #   environment:
-  #     - REDIS_HOST=redis
-  #     - REDIS_PORT=6379
-  #   command: python /cowhub-core/lib/rabbit.py
-  ami-core:
+  ubuntu-core:
     build:
       context: .
-      dockerfile: Dockerfile.ami
-    command: echo 'Hello World'
+      dockerfile: Dockerfile
+    command: python /cowhub-core/lib/rabbit.py
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     volumes:
       - .:/cowhub-core
+  # ami-core:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.ami
+  #   command: echo 'Hello World'
+  #   environment:
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #   volumes:
+  #     - .:/cowhub-core
