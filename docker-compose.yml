@@ -4,12 +4,10 @@ services:
   core:
     build:
       context: .
-      dockerfile: Dockerfile
-
+      dockerfile: Dockerfile.ami
     environment:
       - REDIS_HOST=146.169.46.122
       - REDIS_PORT=6379
       - REDIS_PASS=lightningcat
       - RABBIT_HOST=146.169.46.196
       - RABBIT_PORT=5672
-

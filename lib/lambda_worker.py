@@ -34,10 +34,7 @@ def handler(event, context):
         else:
             return a_id, v
 
-    image_id, value = reduce(reducer,
-                             keys,
-                             (None, float("inf"))
-                             )
+    image_id, value = reduce(reducer, keys, (None, float("inf")))
 
     return {
         'image_id': image_id,
