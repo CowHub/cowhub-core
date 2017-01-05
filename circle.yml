@@ -21,4 +21,4 @@ deployment:
   production:
     branch: aws-lambda-redo
     commands:
-      - cp -r lambda_package.zip $CIRCLE_ARTIFACTS/
+      - cp -r publish/lambda_package.zip $CIRCLE_ARTIFACTS/
