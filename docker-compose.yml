@@ -4,13 +4,4 @@ services:
   core:
     build:
       context: .
-      dockerfile: Dockerfile
-
-    environment:
-      - REDIS_HOST=146.169.46.122
-      - REDIS_PORT=6379
-      - REDIS_PASS=lightningcat
-      - RABBIT_HOST=146.169.46.196
-      - RABBIT_PORT=5672
-
-    command: python /cowhub-core/lib/rabbit.py
+      dockerfile: Dockerfile.ami
