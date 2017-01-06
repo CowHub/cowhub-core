@@ -5,6 +5,7 @@ machine:
 dependencies:
   override:
     - pip install awscli
+    - curl https://get.docker.com/ | sh
 
 test:
   override:
