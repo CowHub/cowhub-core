@@ -7,11 +7,15 @@ test:
     - mkdir -p publish
     - cp -r lib/* publish/
     - cp -r package/* publish/
-    - cd publish && zip -r lambda_package.zip .
+    - cd publish && zip -r cowhub-image-register.zip .
 
 deployment:
   production:
     branch: master
     commands:
-      - cp -r publish/lambda_package.zip $CIRCLE_ARTIFACTS/
-      - aws lambda update-function-code --region eu-west-1 --function-name cowhub-image-register --zip-file fileb://$PWD/publish/lambda_package.zip
+      - cp -r publish/cowhub-image-register.zip $CIRCLE_ARTIFACTS/
+      - |
+        aws lambda update-function-code \
+            --region eu-west-1 \
+            --function-name cowhub-image-register \
+            --zip-file fileb://$PWD/publish/cowhub-image-register.zip
