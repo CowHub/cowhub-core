@@ -3,12 +3,13 @@ import pickle
 from functools import reduce
 from rediscluster import StrictRedisCluster
 import elasticache_auto_discovery
+import os
 
 from worker import calc_diff
 
 client = boto3.client('lambda')
-elastic_ip = ''  # TODO: fill in
-elastic_port = ''
+elastic_ip = os.environ['ELASTIC_IP']
+elastic_port = os.getenv('ELASTIC_PORT', '6379')
 elastic_endpoint = '%s:%s' % (elastic_ip, elastic_port)
 nodes = elasticache_auto_discovery.discover(elastic_endpoint)
 nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
