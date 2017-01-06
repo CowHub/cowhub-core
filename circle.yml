@@ -1,4 +1,7 @@
 machine:
+  environment:
+    S3_BUCKET: cowhub-lambda-functions
+    S3_KEY_REGISTER: cowhub-image-register/$CIRCLE_BUILD_NUM-$CIRCLE_SHA1
   services:
     - docker
 
@@ -9,8 +12,8 @@ dependencies:
 test:
   override:
     - mkdir -p package-lib
-    - docker login -e $DOCKER_EMAIL -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - |
+      docker login -e $DOCKER_EMAIL -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
       docker run -itd -v $PWD/package-lib:/package-lib cowhub/cowhub-core \
                  /bin/bash -c 'cd /package-lib && tar -xvf /stack.tgz'
     - mkdir -p publish
@@ -25,7 +28,9 @@ deployment:
     commands:
       - cp -r publish/cowhub-image-register.zip $CIRCLE_ARTIFACTS/
       - |
+        aws s3 cp publish/cowhub-image-register.zip s3://$S3_BUCKET/$S3_KEY_REGISTER
         aws lambda update-function-code \
             --region eu-west-1 \
             --function-name cowhub-image-register \
-            --zip-file fileb://$PWD/publish/cowhub-image-register.zip
+            --s3-bucket $S3_BUCKET \
+            --s3-key $S3_KEY_REGISTER
