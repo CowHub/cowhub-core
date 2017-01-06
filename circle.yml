@@ -1,0 +1,21 @@
+dependencies:
+  override:
+    - pip install awscli
+
+test:
+  override:
+    - mkdir -p publish
+    - cp -r lib/* publish/
+    - cp -r package/* publish/
+    - cd publish && zip -r cowhub-image-register.zip .
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - cp -r publish/cowhub-image-register.zip $CIRCLE_ARTIFACTS/
+      - |
+        aws lambda update-function-code \
+            --region eu-west-1 \
+            --function-name cowhub-image-register \
+            --zip-file fileb://$PWD/publish/cowhub-image-register.zip
