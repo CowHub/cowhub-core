@@ -1,20 +1,22 @@
 import boto3
 import pickle
 from functools import reduce
+from redis import StrictRedis
 from rediscluster import StrictRedisCluster
 import elasticache_auto_discovery
 import os
+import json
 
 from worker import calc_diff, generate_descriptor
 
 
 def get_redis():
-    elastic_ip = os.environ['ELASTIC_IP']
-    elastic_port = os.getenv('ELASTIC_PORT', '6379')
+    elastic_ip = os.environ['ELASTICACHE_IP']
+    elastic_port = os.getenv('ELASTICACHE_PORT', '6379')
     elastic_endpoint = '%s:%s' % (elastic_ip, elastic_port)
-    nodes = elasticache_auto_discovery.discover(elastic_endpoint)
-    nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
-    redis_conn = StrictRedisCluster(nodes)
+    # nodes = elasticache_auto_discovery.discover(elastic_endpoint)
+    # nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
+    redis_conn = StrictRedis(elastic_endpoint)
 
     return redis_conn
 
@@ -25,7 +27,16 @@ MATCH = 'cattle_image_id_*'
 LAMBDA_COUNT = 25
 
 
-def register_handler(event, _):
+def register_handler(event, context):
+    try:
+        print(event)
+        print(context)
+
+        print(json.dumps(event))
+        print(json.dumps(context))
+    except:
+        pass
+
     image = event['image']
     image_id = event['image_id']
     image_descriptor = generate_descriptor(image)
