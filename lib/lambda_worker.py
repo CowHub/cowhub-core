@@ -5,7 +5,7 @@ from rediscluster import StrictRedisCluster
 import elasticache_auto_discovery
 import os
 
-from worker import calc_diff
+from worker import calc_diff, generate_descriptor
 
 client = boto3.client('lambda')
 elastic_ip = os.environ['ELASTIC_IP']
@@ -19,10 +19,22 @@ MATCH = 'cattle_image_id_*'
 LAMBDA_COUNT = 25
 
 
-def handler(event, context):
+def register_handler(event, _):
+    image = event['image']
+    image_id = event['image_id']
+    image_descriptor = generate_descriptor(image)
+
+    redis_conn.set('cattle_image_id_%s' % (image_id, ), pickle.dumps(image_descriptor))
+
+    return {
+        'status': 'success'
+    }
+
+
+def match_handler(event, _):
     iter_id = event['iter_id']
     image = event['image']
-    image_descriptor = pickle.loads(image)
+    image_descriptor = generate_descriptor(image)
 
     _, keys = redis_conn.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
 
