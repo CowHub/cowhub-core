@@ -58,3 +58,4 @@ ENV/
 .spyderproject
 .ropeproject
 .DS_Store
+package-lib

@@ -1,13 +1,18 @@
+machine:
+  services:
+    - docker
+
 dependencies:
   override:
     - pip install awscli
 
 test:
   override:
+    - docker-compose up -d
     - mkdir -p publish
     - cp -r lib/* publish/
-    - pip install -r requirements.txt -t package
     - cp -r package/* publish/
+    - cp -r package-lib/* publish/
     - cd publish && zip -r cowhub-image-register.zip .
 
 deployment:
