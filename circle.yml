@@ -8,7 +8,7 @@ dependencies:
 
 test:
   override:
-    - docker-compose info
+    - docker-compose version
     - docker-compose up -d
     - mkdir -p publish
     - cp -r lib/* publish/
