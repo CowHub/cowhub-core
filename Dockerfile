@@ -2,8 +2,8 @@ FROM amazonlinux:latest
 
 # Install the SciPy stack on Amazon Linux and prepare it for AWS Lambda
 RUN yum -y update
-RUN yum -y groupinstall "Development Tools"
 RUN yum -y install epel-release
+RUN yum -y groupinstall "Development Tools"
 RUN yum -y install blas
 RUN yum -y install lapack
 RUN yum -y install atlas-sse3-devel
