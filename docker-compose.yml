@@ -1,8 +1,0 @@
-version: '2'
-
-services:
-  core:
-    build: .
-    command: cp -r /cowhub/* /core
-    volumes:
-      - ./core:/core
