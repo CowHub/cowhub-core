@@ -13,13 +13,16 @@ RUN yum -y install python27-numpy.x86_64
 RUN yum -y install python27-numpy-f2py.x86_64
 RUN yum -y install python27-scipy.x86_64
 
+WORKDIR /home/ec2-user/
 RUN easy_install pip
 RUN /usr/local/bin/pip install --upgrade pip
 RUN mkdir -p /home/ec2-user/stack
-RUN /usr/local/bin/pip install moviepy -t /home/ec2-user/stack
 
-RUN cp -R /usr/lib64/python2.7/dist-packages/numpy /home/ec2-user/stack/numpy
-RUN cp -R /usr/lib64/python2.7/dist-packages/scipy /home/ec2-user/stack/scipy
+COPY requirements.txt ./
+RUN /usr/local/bin/pip install -r requirements.txt -t stack
+
+RUN cp -R /usr/lib64/python2.7/dist-packages/numpy stack/numpy
+RUN cp -R /usr/lib64/python2.7/dist-packages/scipy stack/scipy
 
 WORKDIR /home/ec2-user/stack
 RUN tar -czvf /stack.tgz *
