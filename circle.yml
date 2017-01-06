@@ -6,6 +6,7 @@ test:
   override:
     - mkdir -p publish
     - cp -r lib/* publish/
+    - pip install -r requirements.txt -t package
     - cp -r package/* publish/
     - cd publish && zip -r cowhub-image-register.zip .
 
