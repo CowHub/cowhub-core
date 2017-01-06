@@ -1,38 +1,56 @@
-FROM ubuntu:16.04
-MAINTAINER hongjiang.liu14@imperial.ac.uk
+FROM amazonlinux:latest
 
-# python installation
-RUN apt-get -y update
-RUN apt-get -y install python2.7-dev wget unzip \
-                       build-essential cmake git pkg-config libatlas-base-dev gfortran \
-                       libjasper-dev libgtk2.0-dev libavcodec-dev libavformat-dev \
-                       libswscale-dev libjpeg-dev libpng-dev libtiff-dev libjasper-dev libv4l-dev
+WORKDIR /cowhub
+
+RUN touch tempfile
+
+# Setting up build env
+RUN yum update -y && \
+    yum install -y git cmake gcc-c++ gcc python2.7-dev chrpath wget
+RUN mkdir -p /cowhub/lambda-package/cv2 /cowhub/build/numpy
+
+# Build numpy
+RUN python --version
 RUN wget https://bootstrap.pypa.io/get-pip.py && python get-pip.py
+RUN pip install --prefix "/cowhub/build/numpy" numpy
 
-# project
-COPY . /cowhub-core
-WORKDIR /cowhub-core
+RUN cp -rf /cowhub/build/numpy/lib64/python2.7/site-packages/numpy /cowhub/lambda-package
 
-RUN pip install -r requirements.txt
+# Build OpenCV 3.1
+ENV NUMPY "/cowhub/lambda-package/numpy/core/include"
 
+WORKDIR /cowhub/build
+RUN git clone https://github.com/Itseez/opencv.git
 
-# opencv installation
-WORKDIR /
-RUN wget https://github.com/Itseez/opencv/archive/3.1.0.zip -O opencv3.zip && \
-    unzip -q opencv3.zip && mv /opencv-3.1.0 /opencv
-RUN wget https://github.com/Itseez/opencv_contrib/archive/3.1.0.zip -O opencv_contrib3.zip && \
-    unzip -q opencv_contrib3.zip && mv /opencv_contrib-3.1.0 /opencv_contrib
-RUN mkdir /opencv/build
-WORKDIR /opencv/build
-RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
-	-D BUILD_PYTHON_SUPPORT=ON \
-	-D CMAKE_INSTALL_PREFIX=/usr/local \
-	-D OPENCV_EXTRA_MODULES_PATH=/opencv_contrib/modules \
-	-D BUILD_NEW_PYTHON_SUPPORT=ON \
-	-D WITH_IPP=OFF \
-	-D WITH_V4L=ON ..
-RUN make -j$NUM_CORES
-RUN make install
-RUN ldconfig
+WORKDIR /cowhub/build/opencv
+RUN git checkout 3.1.0
+RUN mkdir /cowhub/build/opencv/build
+WORKDIR /cowhub/build/opencv/build
+RUN cmake										\
+		-D CMAKE_BUILD_TYPE=RELEASE				\
+		-D WITH_TBB=ON							\
+		-D WITH_IPP=ON							\
+		-D WITH_V4L=ON							\
+		-D ENABLE_AVX=ON						\
+		-D ENABLE_SSSE3=ON						\
+		-D ENABLE_SSE41=ON						\
+		-D ENABLE_SSE42=ON						\
+		-D ENABLE_POPCNT=ON						\
+		-D ENABLE_FAST_MATH=ON					\
+		-D BUILD_EXAMPLES=OFF					\
+		-D PYTHON2_NUMPY_INCLUDE_DIRS="$NUMPY"	\
+		..
+RUN make -j8
 
-WORKDIR /cowhub-core
+# RUN cp /cowhub/build/opencv/lib/cv2.so /cowhub/lambda-package/cv2/__init__.so
+# RUN cp -L /cowhub/build/opencv/lib/*.so.3.1 /cowhub/lambda-package/cv2
+# RUN strip --strip-all /cowhub/lambda-package/cv2/*
+# RUN chrpath -r '$ORIGIN' /cowhub/lambda-package/cv2/__init__.so
+# RUN touch /cowhub/lambda-package/cv2/__init__.py
+#
+# # Copy functions into package
+# COPY lib/* lambda-package/
+#
+# # Zip package
+# WORKDIR /cowhub/lambda-package
+# RUN zip -r ../lambda-package.zip *
