@@ -1,8 +1,5 @@
-version: '2'
-
-services:
-  core:
-    build: .
-    command: /bin/bash -c 'cd /package && tar -xvf /stack.tgz'
-    volumes:
-      - ./package-lib:/package
+core:
+  build: .
+  command: /bin/bash -c 'cd /package && tar -xvf /stack.tgz'
+  volumes:
+    - ./package-lib:/package

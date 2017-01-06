@@ -1,11 +1,13 @@
+machine:
+  services:
+    - docker
+
 dependencies:
   override:
     - pip install awscli
-    - curl https://get.docker.com/ | sh
 
 test:
   override:
-    - docker-compose version
     - docker-compose up -d
     - mkdir -p publish
     - cp -r lib/* publish/
