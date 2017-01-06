@@ -1,7 +1,7 @@
 import cv2
 
 def lambda_handler(event, context):
-    print "OpenCV installed version:", cv2.__version__
+    print "OpenCV installed version:", cv2
     return "It works!"
 
 if __name__ == "__main__":
