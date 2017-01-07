@@ -16,7 +16,7 @@ test:
       docker login -e $DOCKER_EMAIL -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
       docker run -itd -v $PWD/package-lib:/package-lib cowhub/cowhub-core \
                  /bin/bash -c 'cd /package-lib && tar -xvf /stack.tgz'
-      ./make_and_verify_package.sh cowhub-image-register
+    - ./make_and_verify_package.sh cowhub-image-register
 
 deployment:
   production:
