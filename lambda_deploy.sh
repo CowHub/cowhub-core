@@ -10,6 +10,8 @@ echo "Deploying $FUNCTION"
 
 ./build_docker.sh || exit 1
 
+make clean || exit 5
+
 docker run -itd -v $PWD/package-lib-$FUNCTION:/package-lib cowhub/cowhub-core \
            /bin/bash -c 'cd /package-lib && tar -xvf /stack.tgz' || exit 2
 

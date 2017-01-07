@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sleep 5
-
 echo "Making package for $1"
 
 PACKAGE="$1"
@@ -12,6 +10,7 @@ PACKAGE_FOLDER="publish-$PACKAGE"
 mkdir -p "$PACKAGE_FOLDER" && \
 cp -r lib/* "$PACKAGE_FOLDER" && \
 cp -r package/* "$PACKAGE_FOLDER" && \
+sleep 30
 cp -r $PACKAGE_LIB/* "$PACKAGE_FOLDER" && \
 cd "$PACKAGE_FOLDER" && zip -r "../$PACKAGE_ZIP" .
 
