@@ -5,6 +5,7 @@ from thinning import thinning
 
 WIDTH = 360
 
+
 def get_edge(image_file, show=False):
     # Read image
     image = cv2.imread(image_file, 0)
@@ -34,6 +35,11 @@ def get_edge(image_file, show=False):
     # Thin binary edges
     thinned_edges = thinning(binary_edges)
 
+    if show:
+        cv2.imshow("binary edges", binary_edges)
+        cv2.imshow("thinned", thinned_edges)
+        cv2.waitKey()
+
     # Display process steps
     # cv2.imshow('original', resized_image)
     # cv2.imshow('blurred', smoothened_image)
@@ -49,4 +55,5 @@ def get_edge(image_file, show=False):
 
 if __name__ == '__main__':
     import sys
+
     get_edge(sys.argv[1], show=True)
