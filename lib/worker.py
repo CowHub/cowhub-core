@@ -24,7 +24,7 @@ def read_base64(data):
     sbuf = StringIO()
     sbuf.write(base64.decodestring(data_padded))
     pimg = Image.open(sbuf)
-    return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
+    return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2GRAY)
 
 
 def generate_descriptor(image):
