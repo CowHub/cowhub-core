@@ -26,20 +26,17 @@ LAMBDA_COUNT = 25
 
 
 def register_handler(event, context):
-    try:
-        print(event)
-        print(context)
+    s3_info = event.Records[0].s3
+    s3_bucket = s3_info.bucket.name
+    s3_key = s3_info.object.key
 
-        print(json.dumps(event))
-        print(json.dumps(context))
-    except:
-        pass
+    print s3_bucket, s3_key
 
-    image = event['image']
-    image_id = event['image_id']
-    image_descriptor = generate_descriptor(image)
-
-    REDIS_CONN.set('cattle_image_id_%s' % (image_id,), pickle.dumps(image_descriptor))
+    # image = event['image']
+    # image_id = event['image_id']
+    # image_descriptor = generate_descriptor(image)
+    #
+    # REDIS_CONN.set('cattle_image_id_%s' % (image_id,), pickle.dumps(image_descriptor))
 
     return {
         'status': 'success'

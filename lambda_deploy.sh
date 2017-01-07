@@ -10,20 +10,18 @@ echo "Deploying $FUNCTION"
 
 ./build_docker.sh || exit 1
 
-make clean || exit 5
-
 docker run -itd -v $PWD/package-lib-$FUNCTION:/package-lib cowhub/cowhub-core \
            /bin/bash -c 'cd /package-lib && tar -xvf /stack.tgz' || exit 2
 
 ./make_and_verify_package.sh $FUNCTION || exit 3
 
-aws s3 cp $FUNCTION.zip s3://$S3_BUCKET/$S3_KEY_REGISTER || exit 4
+aws s3 cp "$FUNCTION.zip" "s3://$S3_BUCKET/$S3_KEY_REGISTER" || exit 4
 aws lambda update-function-code \
     --region eu-west-1 \
-    --function-name $FUNCTION \
-    --s3-bucket $S3_BUCKET \
-    --s3-key $S3_KEY_REGISTER
+    --function-name "$FUNCTION" \
+    --s3-bucket "$S3_BUCKET" \
+    --s3-key "$S3_KEY_REGISTER"
 
 # For verification
 mkdir -p verify_package
-cd verify_package && unzip ../$FUNCTION.zip
+cd verify_package && unzip "../$FUNCTION.zip"
