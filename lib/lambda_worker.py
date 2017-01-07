@@ -31,56 +31,64 @@ MATCH = 'cattle_image_id_*'
 LAMBDA_COUNT = 25
 
 
-def register_handler(event, context):
+def send_descriptor_to_redis(event, prefix):
     s3_info = event['Records'][0]['s3']
     s3_bucket = s3_info['bucket']['name']
     s3_key = s3_info['object']['key']
 
     print 'Image put:', s3_bucket, s3_key
-
-    image_id = s3_key.split('/')[-1].split('-')[0]
-
-    print 'Image ID:', image_id
     print 'Retrieving image from S3'
 
     s3_client = boto3.client('s3')
-    image = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)['Body']
+    image = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)['Body'].read()
 
     print 'Retrieved image from S3'
+
+    id_ = s3_key.split('/')[-1].split('-')[0]
+
+    print 'Event ID:', id_
     print 'Generating image desriptor'
 
     image_descriptor = generate_descriptor(image)
 
     print 'Generated image descriptor. Sending to Redis.'
 
-    REDIS_CONN.set('cattle_image_id_%s' % (image_id, ), pickle.dumps(image_descriptor))
+    REDIS_CONN.set('%s%s' % (prefix, id_), pickle.dumps(image_descriptor))
 
     print 'Sent to Redis successfully.'
 
-    return {
-        'status': 'success'
-    }
+
+def register_handler(event, context):
+    send_descriptor_to_redis(event, 'cattle_image_id_')
+    return { 'status': 'success' }
 
 
-def match_handler(event, _):
-    iter_id = event['iter_id']
-    image = event['image']
-    image_descriptor = generate_descriptor(image)
+def match_handler(event, context):
+    send_descriptor_to_redis(event, 'match_image_id_')
+    return { 'status': 'success' }
 
-    _, keys = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
 
-    def reducer((a_id, v), b_id):
-        i = pickle.loads(REDIS_CONN.get(b_id))
-        diff = calc_diff(image_descriptor, i)
-
-        if diff < v:
-            return b_id, diff
-        else:
-            return a_id, v
-
-    image_id, value = reduce(reducer, keys, (None, float("inf")))
-
-    return {
-        'image_id': image_id,
-        'value': value
-    }
+# def compare_handler(event, context):
+#     key, image = get_image_from_s3(event)
+#
+#     iter_id = event['iter_id']
+#     image = event['image']
+#     image_descriptor = generate_descriptor(image)
+#
+#     _, keys = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
+#
+#     def reducer((a_id, v), b_id):
+#         i = pickle.loads(REDIS_CONN.get(b_id))
+#         diff = calc_diff(image_descriptor, i)
+#
+#         if diff < v:
+#             return b_id, diff
+#         else:
+#             return a_id, v
+#
+#     image_id, value = reduce(reducer, keys, (None, float("inf")))
+#
+#     return {
+#         'image_id': image_id,
+#         'value': value
+#     }

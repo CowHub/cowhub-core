@@ -12,9 +12,17 @@ from descriptor import get_descriptor
 from edging import get_edge
 
 
-def read_base64(blob):
+def read_base64(data):
+    data_padded = data[:].split(';')[1]
+    data_padded = data_padded[6:]
+    missing_padding = len(data_padded) % 4
+    if missing_padding != 0:
+        data_padded += '=' * (4 - missing_padding)
+
+    print 'Image length (with padding):', len(data_padded)
+
     sbuf = StringIO()
-    sbuf.write(base64.b64decode(blob))
+    sbuf.write(base64.decodestring(data_padded))
     pimg = Image.open(sbuf)
     return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
 
