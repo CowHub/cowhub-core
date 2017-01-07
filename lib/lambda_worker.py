@@ -6,7 +6,7 @@ from redis import StrictRedis
 import os
 import json
 
-from worker import calc_diff, generate_descriptor
+from worker import read_base64, calc_diff, generate_descriptor
 
 
 def get_redis():
@@ -49,7 +49,8 @@ def send_descriptor_to_redis(event, prefix):
     print 'Event ID:', id_
     print 'Generating image desriptor'
 
-    image_descriptor = generate_descriptor(image)
+    image_array = read_base64(image)
+    image_descriptor = generate_descriptor(image_array)
 
     print 'Generated image descriptor. Sending to Redis.'
 
