@@ -1,5 +1,12 @@
 boto3==1.4.3
 botocore==1.4.93
+docutils==0.13.1
+futures==3.0.5
+jmespath==0.9.0
 numpy==1.11.2
-redis==2.10.5
 Pillow==3.4.2
+python-dateutil==2.6.0
+redis==2.10.5
+s3transfer==0.1.10
+six==1.10.0
+weave==0.15.0
