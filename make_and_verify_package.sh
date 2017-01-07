@@ -10,6 +10,8 @@ cp -r package/* "$PACKAGE_FOLDER" && \
 cp -r package-lib-$PACKAGE/* "$PACKAGE_FOLDER" && \
 cd "$PACKAGE_FOLDER" && zip -r "../$PACKAGE_ZIP" .
 
+# TODO:
+
 # # Test compressed size
 # maximumsize=52428800
 # actualsize=$(wc -c <"$PWD/$PACKAGE_ZIP")
