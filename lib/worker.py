@@ -27,8 +27,7 @@ def read_base64(data):
     return cv2.cvtColor(np.array(pimg), cv2.COLOR_RGB2BGR)
 
 
-def generate_descriptor(blob):
-    image = read_base64(blob)
+def generate_descriptor(image):
     _, edge = get_edge(image)
     return get_descriptor(edge)
 
