@@ -6,10 +6,7 @@ from thinning import thinning
 WIDTH = 360
 
 
-def get_edge(image_file, show=False):
-    # Read image
-    image = cv2.imread(image_file, 0)
-
+def get_edge(image, show=False):
     # Resize image
     old_height, old_width = image.shape
     new_width = WIDTH

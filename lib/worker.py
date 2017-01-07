@@ -14,7 +14,7 @@ from edging import get_edge
 
 def read_base64(data):
     data_padded = data[:].split(';')[1]
-    data_padded = data_padded[6:]
+    data_padded = data_padded[6:] # Remove base64
     missing_padding = len(data_padded) % 4
     if missing_padding != 0:
         data_padded += '=' * (4 - missing_padding)

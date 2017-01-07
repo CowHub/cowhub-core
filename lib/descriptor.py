@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-# cv2.ocl.setUseOpenCL(False)
+cv2.ocl.setUseOpenCL(False)
 
 
 def get_descriptor(edges, harris_threshold=100):
