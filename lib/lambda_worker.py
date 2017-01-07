@@ -1,9 +1,7 @@
-import boto3
 import pickle
 from functools import reduce
 from redis import StrictRedis
-from rediscluster import StrictRedisCluster
-import elasticache_auto_discovery
+# import elasticache_auto_discovery
 import os
 import json
 
