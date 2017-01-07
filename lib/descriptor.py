@@ -28,7 +28,7 @@ if __name__ == '__main__':
     from edging import get_edge
 
     c1 = datetime.now()
-    (_, source_edge, _) = get_edge(image_file=source_image)
+    _, source_edge = get_edge(image_file=source_image)
     c2 = datetime.now()
     _, source = get_descriptor(source_edge)
     c3 = datetime.now()
