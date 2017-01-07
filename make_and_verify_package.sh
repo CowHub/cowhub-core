@@ -10,11 +10,10 @@ PACKAGE_FOLDER="publish-$PACKAGE"
 mkdir -p "$PACKAGE_FOLDER" && \
 cp -r lib/* "$PACKAGE_FOLDER" && \
 cp -r package/* "$PACKAGE_FOLDER" && \
-sleep 30
+cd $PACKAGE_LIB && tar -xvf stack.tgz && \
+cd ../ && mv $PACKAGE_LIB/stack.tgz ./ && \
 cp -r $PACKAGE_LIB/* "$PACKAGE_FOLDER" && \
 cd "$PACKAGE_FOLDER" && zip -r "../$PACKAGE_ZIP" .
-
-# TODO:
 
 # # Test compressed size
 # maximumsize=52428800

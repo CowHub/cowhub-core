@@ -14,7 +14,7 @@ make clean || exit 5
 
 docker run -itd -v "$PWD/package-lib-$FUNCTION":/package-lib \
            cowhub/cowhub-core \
-           /bin/bash -c 'cd /package-lib && tar -xvf /stack.tgz' || exit 2
+           /bin/bash -c 'cp /stack.tgz /package-lib/' || exit 2
 
 ./make_and_verify_package.sh $FUNCTION || exit 3
 

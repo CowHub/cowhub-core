@@ -61,4 +61,5 @@ ENV/
 package-lib*
 publish*
 *.zip
+*.tgz
 verify_package
