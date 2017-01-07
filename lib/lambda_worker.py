@@ -32,11 +32,12 @@ def register_handler(event, context):
 
     print s3_bucket, s3_key
 
-    # image = event['image']
-    # image_id = event['image_id']
-    # image_descriptor = generate_descriptor(image)
-    #
-    # REDIS_CONN.set('cattle_image_id_%s' % (image_id,), pickle.dumps(image_descriptor))
+    s3_client = boto3.client('s3')
+    image = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)['Body']
+    image_id = s3_key.split('/')[-1].split('-')[0]
+    image_descriptor = generate_descriptor(image)
+
+    REDIS_CONN.set('cattle_image_id_%s' % (image_id, ), pickle.dumps(image_descriptor))
 
     return {
         'status': 'success'
