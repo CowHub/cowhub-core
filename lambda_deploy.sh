@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[ $# -eq 0 ] && exit 10
+
 FUNCTION="$1"
 S3_BUCKET="cowhub-lambda-functions"
 S3_KEY_REGISTER="cowhub-image-register/$RANDOM-$RANDOM-$RANDOM"
