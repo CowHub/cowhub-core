@@ -26,9 +26,9 @@ LAMBDA_COUNT = 25
 
 
 def register_handler(event, context):
-    s3_info = event.Records[0].s3
-    s3_bucket = s3_info.bucket.name
-    s3_key = s3_info.object.key
+    s3_info = event['Records'][0]['s3']
+    s3_bucket = s3_info['bucket']['name']
+    s3_key = s3_info['object']['key']
 
     print s3_bucket, s3_key
 
