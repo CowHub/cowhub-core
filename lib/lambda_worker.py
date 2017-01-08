@@ -87,7 +87,7 @@ def match_handler(event, context):
     aws_lambda = boto3.client('lambda')
     iter_id = 0
     while True:
-        print('Invoking', (iter_id + 1))
+        print('Invoking', iter_id)
 
         aws_lambda.invoke(
             FunctionName='cowhub-image-compare',
@@ -99,7 +99,7 @@ def match_handler(event, context):
             })
         )
 
-        print('Invocation', (iter_id + 1), 'success.')
+        print('Invocation', iter_id, 'success.')
 
         iter_id, _ = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
         if iter_id == 0:
