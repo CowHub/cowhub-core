@@ -4,9 +4,7 @@ from sc_2739f1c0fafb0bb7062bb06fd6d958c40 import compiled_func
 
 def _thinningIteration(im, iter):
     I, M = im, np.zeros(im.shape, np.uint8)
-
-    compiled_func(I=I, iter=iter, M=M)
-
+    compiled_func()
     return I & ~M
 
 
