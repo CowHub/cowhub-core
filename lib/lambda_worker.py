@@ -71,7 +71,7 @@ def get_descriptor_from_event(event, context, prefix=None):
     print('Sent to Redis successfully.')
     prt(context)
 
-    return id_, image_descriptor
+    return id_, image_descriptor, s3_client
 
 
 def register_handler(event, context):
@@ -80,23 +80,24 @@ def register_handler(event, context):
 
 
 def match_handler(event, context):
-    match_image_id, match_image_descriptor = get_descriptor_from_event(event, context)
+    match_image_id, match_image_descriptor, s3_client = get_descriptor_from_event(event, context, prefix='match_image_id_')
 
     print('Invoking lambda comparisons...')
-
-    aws_lambda = boto3.client('lambda')
     iter_id = 0
     while True:
         print('Invoking', iter_id)
 
-        aws_lambda.invoke(
-            FunctionName='cowhub-image-compare',
-            InvocationType='Event',
-            Payload=json.dumps({
-                'iter_id': iter_id,
-                'match_image_id': match_image_id,
-                'match_image_descriptor': kp_dumps(match_image_descriptor)
-            })
+        message = {
+            'iter_id': iter_id,
+            'match_image_id': match_image_id
+        }
+
+        print('Sending message', json.dumps(message))
+        response = s3_client.put_object(
+            Bucket='cowhub-production-images',
+            Key='match-metadata/%s-%s.metadata.json' % (match_image_id, iter_id),
+            ACL='private',
+            Body=json.dumps(message)
         )
 
         print('Invocation', iter_id, 'success.')
@@ -109,25 +110,68 @@ def match_handler(event, context):
 
 
 def compare_handler(event, context):
-    iter_id = None
-    match_image_id = None
-    match_image_descriptor = None
+    s3_info = event['Records'][0]['s3']
+    s3_bucket = s3_info['bucket']['name']
+    s3_key = s3_info['object']['key']
+
+    print('Metadata put:', s3_bucket, s3_key)
+    print('Retrieving metadata from S3')
+    prt(context)
+
+    print('Retrieved metadata from S3')
+    prt(context)
+
+    metadata = s3_key.split('/')[-1].split('.')[0].split('-')
+    match_image_id, iter_id = metadata
+
+    print('Match Image ID:', match_image_id)
+    print('Iteration  ID:', iter_id)
+    prt(context)
+
+    print('Retrieving match descriptor')
+    prt(context)
+
+    match_item = REDIS_CONN.get('match_image_id_%s' % (match_image_id))
+    match_image_descriptor = kp_loads(match_item)
+
+    print('Retrieved and processed match descriptor')
+    print('Retrieving potential match descriptors from Redis')
+    prt(context)
 
     _, matches = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
-    best_in_server = float(REDIS_CONN.get('best_match_value_%s' % match_image_id))
+
+    best_in_server = float('inf') # float(REDIS_CONN.get('best_match_value_%s' % match_image_id))
+
+    print('Retrieved matches, starting iteration')
+    prt(context)
 
     best_value = best_in_server
     best_match = None
     for match in matches:
+        print('Processing match:', match)
+        prt(context)
+
         match_descriptor = REDIS_CONN.get(match)
         descriptor = kp_loads(match_descriptor)
 
-        diff = calc_diff(match_image_descriptor, descriptor)
+        print('Match loaded:', match)
+        prt(context)
+
+        diff = calc_diff(match_image_descriptor[1], descriptor[1])
         if diff < best_value:
+            print('Match is improvement!')
+            prt(context)
             best_value = diff
             best_match = match.split('_')[-1]
 
-    if best_value < best_in_server:
-        with redis_lock.Lock(REDIS_CONN, 'lock_match_%s' % match_image_id):
-            REDIS_CONN.set('best_match_value_%s' % match_image_id, best_value)
-            REDIS_CONN.set('best_match_%s' % match_image_id, best_match)
+    # if best_value < best_in_server:
+    #     with redis_lock.Lock(REDIS_CONN, 'lock_match_%s' % match_image_id):
+    #         REDIS_CONN.set('best_match_value_%s' % match_image_id, best_value)
+    #         REDIS_CONN.set('best_match_%s' % match_image_id, best_match)
+    print('Generated best match')
+    prt(context)
+
+    return {
+        "match_id": best_match,
+        "value": best_value
+    }

@@ -1,8 +1,7 @@
 machine:
   environment:
     S3_BUCKET: cowhub-lambda-functions
-    S3_KEY_REGISTER: cowhub-image-register/$CIRCLE_BUILD_NUM-$CIRCLE_SHA1
-    S3_KEY_MATCH: cowhub-image-match/$CIRCLE_BUILD_NUM-$CIRCLE_SHA1
+    S3_KEY: $CIRCLE_BUILD_NUM-$CIRCLE_SHA1
   services:
     - docker
 
@@ -14,13 +13,9 @@ test:
   override:
     - docker login -e $DOCKER_EMAIL -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
     - |
-      docker run -itd -v $PWD/package-lib-cowhub-image-register:/package-lib cowhub/cowhub-core \
+      docker run -itd -v $PWD/package-lib:/package-lib cowhub/cowhub-core \
                  /bin/bash -c 'cp /stack.tgz /package-lib/'
-    - ./make_and_verify_package.sh cowhub-image-register
-    - |
-      docker run -itd -v $PWD/package-lib-cowhub-image-match:/package-lib cowhub/cowhub-core \
-                 /bin/bash -c 'cp /stack.tgz /package-lib/'
-    - ./make_and_verify_package.sh cowhub-image-match
+    - ./make_and_verify_package.sh
 
 deployment:
   production:
@@ -28,17 +23,14 @@ deployment:
     commands:
       - |
         cp -r cowhub-image-register.zip $CIRCLE_ARTIFACTS/
-        aws s3 cp cowhub-image-register.zip s3://$S3_BUCKET/$S3_KEY_REGISTER
+        aws s3 cp publish.zip s3://$S3_BUCKET/$S3_KEY
         aws lambda update-function-code \
             --region eu-west-1 \
             --function-name cowhub-image-register \
             --s3-bucket $S3_BUCKET \
-            --s3-key $S3_KEY_REGISTER
-      - |
-        cp -r cowhub-image-match.zip $CIRCLE_ARTIFACTS/
-        aws s3 cp cowhub-image-match.zip s3://$S3_BUCKET/$S3_KEY_MATCH
+            --s3-key $S3_KEY
         aws lambda update-function-code \
             --region eu-west-1 \
             --function-name cowhub-image-match \
             --s3-bucket $S3_BUCKET \
-            --s3-key $S3_KEY_MATCH
+            --s3-key $S3_KEY

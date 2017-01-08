@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "Making package for $1"
+echo "Making package"
 
-PACKAGE="$1"
-PACKAGE_ZIP="$PACKAGE.zip"
-PACKAGE_LIB="package-lib-$PACKAGE"
-PACKAGE_FOLDER="publish-$PACKAGE"
+# PACKAGE="$1"
+PACKAGE_ZIP="publish.zip"
+PACKAGE_LIB="package-lib"
+PACKAGE_FOLDER="publish"
 
 mkdir -p "$PACKAGE_FOLDER" && \
 cp -r lib/* "$PACKAGE_FOLDER" && \

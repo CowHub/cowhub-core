@@ -1,4 +1,5 @@
 import cv2
+import datetime
 from utils import kp_dumps, kp_loads
 from StringIO import StringIO
 import sys
@@ -33,9 +34,23 @@ def generate_descriptor(image):
 
 
 def calc_diff(source, target):
-    matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)
+    t0 = datetime.datetime.now()
+    matcher = cv2.DescriptorMatcher_create("BruteForce-Hamming")
+    t1 = datetime.datetime.now()
+
+    print('Matcher took', str(t1 - t0), 'to initialise')
+
     matches = matcher.match(source, target)
-    return reduce(lambda a, b: a + b.distance, matches, 0.0)
+    t2 = datetime.datetime.now()
+
+    print('Matcher took', str(t2 - t1), 'to calculate diff')
+
+    result = reduce(lambda a, b: a + b.distance, matches, 0.0)
+    t3 = datetime.datetime.now()
+
+    print ('Result took', str(t3 - t2), 'to be processed')
+
+    return result
 
 
 def find_match(blob, potential_matches):
