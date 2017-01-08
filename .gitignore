@@ -63,3 +63,4 @@ publish*
 *.zip
 *.tgz
 verify_package
+package-local

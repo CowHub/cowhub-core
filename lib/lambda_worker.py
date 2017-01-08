@@ -5,6 +5,7 @@ from redis import StrictRedis
 import os
 import json
 import redis_lock
+import requests
 
 from worker import read_base64, calc_diff, generate_descriptor
 
@@ -33,9 +34,7 @@ def get_redis():
 
 
 REDIS_CONN = get_redis()
-
 MATCH = 'cattle_image_id_*'
-LAMBDA_COUNT = 25
 
 
 def get_descriptor_from_event(event, context, prefix=None):
@@ -83,7 +82,9 @@ def match_handler(event, context):
     match_image_id, match_image_descriptor, s3_client = get_descriptor_from_event(event, context, prefix='match_image_id_')
 
     print('Invoking lambda comparisons...')
+
     iter_id = 0
+    count = 0
     while True:
         print('Invoking', iter_id)
 
@@ -100,13 +101,26 @@ def match_handler(event, context):
             Body=json.dumps(message)
         )
 
+        count += 1
+
         print('Invocation', iter_id, 'success.')
 
-        iter_id, _ = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
+        iter_id, _ = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=os.environ['LAMBDA_COUNT'])
         if iter_id == 0:
             break
 
-    return {'status': 'success'}
+    r = requests.post(
+        'http://api.cowhub.co.uk/match/%s/lambda/count' % match_image_id,
+        data={'count': count})
+    try_count = 1
+    while try_count < 5 and not r.status_code is 200:
+        r = requests.post(
+            'http://api.cowhub.co.uk/match/%s/lambda/count' % match_image_id,
+            data={'count': count})
+
+    return {
+        'status': 'success' if r.status_code is 200 else 'failed'
+    }
 
 
 def compare_handler(event, context):
@@ -138,14 +152,12 @@ def compare_handler(event, context):
     print('Retrieving potential match descriptors from Redis')
     prt(context)
 
-    _, matches = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
-
-    best_in_server = float('inf') # float(REDIS_CONN.get('best_match_value_%s' % match_image_id))
+    _, matches = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=os.environ['LAMBDA_COUNT'])
 
     print('Retrieved matches, starting iteration')
     prt(context)
 
-    best_value = best_in_server
+    best_value = float('inf')
     best_match = None
     for match in matches:
         print('Processing match:', match)
@@ -164,14 +176,21 @@ def compare_handler(event, context):
             best_value = diff
             best_match = match.split('_')[-1]
 
-    # if best_value < best_in_server:
-    #     with redis_lock.Lock(REDIS_CONN, 'lock_match_%s' % match_image_id):
-    #         REDIS_CONN.set('best_match_value_%s' % match_image_id, best_value)
-    #         REDIS_CONN.set('best_match_%s' % match_image_id, best_match)
     print('Generated best match')
     prt(context)
 
+    r = requests.post(
+        'http://api.cowhub.co.uk/match/%s/lambda' % match_image_id,
+        data={'count': count})
+    try_count = 1
+    while try_count < 5 and not r.status_code is 200:
+        r = requests.post(
+            'http://api.cowhub.co.uk/match/%s/lambda/count' % match_image_id,
+            data={
+                "image_id": best_match,
+                "value": best_value
+            })
+
     return {
-        "match_id": best_match,
-        "value": best_value
+        'status': 'success' if r.status_code is 200 else 'failed'
     }
