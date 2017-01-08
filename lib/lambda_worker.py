@@ -9,7 +9,11 @@ import json
 from worker import read_base64, calc_diff, generate_descriptor
 
 
-def get_redis():
+def prt(context):
+    print context.get_remaining_time_in_millis()
+
+
+def get_redis(context):
     elastic_ip = os.environ['ELASTICACHE_IP']
     elastic_port = os.getenv('ELASTICACHE_PORT', '6379')
 
@@ -17,9 +21,13 @@ def get_redis():
 
     # nodes = elasticache_auto_discovery.discover(elastic_endpoint)
     # nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
-    redis_conn = StrictRedis(elastic_ip, int(elastic_port))
+    redis_conn = StrictRedis(
+        host=elastic_ip,
+        port=int(elastic_port),
+        socket_connect_timeout=2
+    )
 
-    print 'Connected to Redis.'
+    print 'Started connection to Redis.'
 
     return redis_conn
 
@@ -30,32 +38,37 @@ MATCH = 'cattle_image_id_*'
 LAMBDA_COUNT = 25
 
 
-def send_descriptor_to_redis(event, prefix):
+def send_descriptor_to_redis(event, prefix, context):
     s3_info = event['Records'][0]['s3']
     s3_bucket = s3_info['bucket']['name']
     s3_key = s3_info['object']['key']
 
     print 'Image put:', s3_bucket, s3_key
     print 'Retrieving image from S3'
+    prt(context)
 
     s3_client = boto3.client('s3')
     image = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)['Body'].read()
 
     print 'Retrieved image from S3'
+    prt(context)
 
     id_ = s3_key.split('/')[-1].split('-')[0]
 
     print 'Event ID:', id_
     print 'Generating image desriptor'
+    prt(context)
 
     image_array = read_base64(image)
     image_descriptor = generate_descriptor(image_array)
 
     print 'Generated image descriptor. Sending to Redis.'
+    prt(context)
 
     REDIS_CONN.set('%s%s' % (prefix, id_), kp_dumps(image_descriptor))
 
     print 'Sent to Redis successfully.'
+    prt(context)
 
 
 def register_handler(event, context):
