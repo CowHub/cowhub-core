@@ -82,18 +82,24 @@ def register_handler(event, context):
 def match_handler(event, context):
     match_image_id, match_image_descriptor = get_descriptor_from_event(event, context)
 
+    print('Invoking lambda comparisons...')
+
     aws_lambda = boto3.client('lambda')
     iter_id = 0
-    while 1:
+    while True:
+        print('Invoking', (iter_id + 1))
+
         aws_lambda.invoke(
             FunctionName='cowhub-image-compare',
             InvocationType='Event',
             Payload=json.dumps({
                 'iter_id': iter_id,
                 'match_image_id': match_image_id,
-                'match_image_descriptor': match_image_descriptor
+                'match_image_descriptor': kp_dumps(match_image_descriptor)
             })
         )
+
+        print('Invocation', (iter_id + 1), 'success.')
 
         iter_id, _ = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
         if iter_id == 0:
