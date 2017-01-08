@@ -15,10 +15,9 @@ def get_redis():
 
     print 'Connecting to Redis at:', elastic_ip, elastic_port
 
-    elastic_endpoint = '%s:%s' % (elastic_ip, elastic_port)
     # nodes = elasticache_auto_discovery.discover(elastic_endpoint)
     # nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
-    redis_conn = StrictRedis(elastic_endpoint)
+    redis_conn = StrictRedis(elastic_ip, int(elastic_port))
 
     print 'Connected to Redis.'
 
