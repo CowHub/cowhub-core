@@ -51,7 +51,7 @@ def find_match(blob, potential_matches):
 
 
 if __name__ == "__main__":
-    image = read_base64(sys.argv[1])
+    image = read_base64(open(sys.argv[1]).read())
     descriptor = generate_descriptor(image)
     encoded_descriptor = pickle.dumps(descriptor)
     print(encoded_descriptor)
