@@ -13,7 +13,7 @@ def prt(context):
     print context.get_remaining_time_in_millis()
 
 
-def get_redis(context):
+def get_redis():
     elastic_ip = os.environ['ELASTICACHE_IP']
     elastic_port = os.getenv('ELASTICACHE_PORT', '6379')
 
@@ -72,12 +72,12 @@ def send_descriptor_to_redis(event, prefix, context):
 
 
 def register_handler(event, context):
-    send_descriptor_to_redis(event, 'cattle_image_id_')
+    send_descriptor_to_redis(event, 'cattle_image_id_', context)
     return { 'status': 'success' }
 
 
 def match_handler(event, context):
-    send_descriptor_to_redis(event, 'match_image_id_')
+    send_descriptor_to_redis(event, 'match_image_id_', context)
     return { 'status': 'success' }
 
 
