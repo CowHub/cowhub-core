@@ -28,3 +28,5 @@ aws lambda update-function-code \
 # For verification
 mkdir -p verify_package
 cd verify_package && unzip "../$FUNCTION.zip"
+
+docker push cowhub/cowhub-core

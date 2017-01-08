@@ -1,5 +1,5 @@
 import cv2
-import pickle
+import cPickle as pickle
 from StringIO import StringIO
 import sys
 from PIL import Image
