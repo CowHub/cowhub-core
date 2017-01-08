@@ -1,5 +1,5 @@
 import cv2
-import cPickle as pickle
+from utils import kp_dumps, kp_loads
 from StringIO import StringIO
 import sys
 from PIL import Image
@@ -43,7 +43,7 @@ def find_match(blob, potential_matches):
     diff = sys.maxint
     match = None
     for potential_match in potential_matches:
-        d = calc_diff(descriptor, pickle.load(potential_match['Value']))
+        d = calc_diff(descriptor, kp_loads(potential_match['Value']))
         if d < diff:
             diff = d
             match = potential_match['Key']
@@ -53,5 +53,5 @@ def find_match(blob, potential_matches):
 if __name__ == "__main__":
     image = read_base64(open(sys.argv[1]).read())
     descriptor = generate_descriptor(image)
-    encoded_descriptor = pickle.dumps(descriptor)
+    encoded_descriptor = kp_dumps(descriptor)
     print(encoded_descriptor)

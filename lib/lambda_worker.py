@@ -1,4 +1,4 @@
-import pickle
+from utils import kp_dumps, kp_loads
 import boto3
 from functools import reduce
 from redis import StrictRedis
@@ -54,7 +54,7 @@ def send_descriptor_to_redis(event, prefix):
 
     print 'Generated image descriptor. Sending to Redis.'
 
-    REDIS_CONN.set('%s%s' % (prefix, id_), pickle.dumps(image_descriptor))
+    REDIS_CONN.set('%s%s' % (prefix, id_), kp_dumps(image_descriptor))
 
     print 'Sent to Redis successfully.'
 
