@@ -4,6 +4,7 @@ import boto3
 from redis import StrictRedis
 import os
 import json
+import redis_lock
 
 from worker import read_base64, calc_diff, generate_descriptor
 
@@ -102,4 +103,25 @@ def match_handler(event, context):
 
 
 def compare_handler(event, context):
-    pass
+    iter_id = None
+    match_image_id = None
+    match_image_descriptor = None
+
+    _, matches = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
+    best_in_server = float(REDIS_CONN.get('best_match_value_%s' % match_image_id))
+
+    best_value = best_in_server
+    best_match = None
+    for match in matches:
+        match_descriptor = REDIS_CONN.get(match)
+        descriptor = kp_loads(match_descriptor)
+
+        diff = calc_diff(match_image_descriptor, descriptor)
+        if diff < best_value:
+            best_value = diff
+            best_match = match.split('_')[-1]
+
+    if best_value < best_in_server:
+        with redis_lock.Lock(REDIS_CONN, 'lock_match_%s' % match_image_id):
+            REDIS_CONN.set('best_match_value_%s' % match_image_id, best_value)
+            REDIS_CONN.set('best_match_%s' % match_image_id, best_match)
