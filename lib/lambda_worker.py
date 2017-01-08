@@ -1,8 +1,7 @@
+from __future__ import print_function
 from utils import kp_dumps, kp_loads
 import boto3
-from functools import reduce
 from redis import StrictRedis
-# import elasticache_auto_discovery
 import os
 import json
 
@@ -10,14 +9,14 @@ from worker import read_base64, calc_diff, generate_descriptor
 
 
 def prt(context):
-    print context.get_remaining_time_in_millis()
+    print(context.get_remaining_time_in_millis())
 
 
 def get_redis():
     elastic_ip = os.environ['ELASTICACHE_IP']
     elastic_port = os.getenv('ELASTICACHE_PORT', '6379')
 
-    print 'Connecting to Redis at:', elastic_ip, elastic_port
+    print('Connecting to Redis at:', elastic_ip, elastic_port)
 
     # nodes = elasticache_auto_discovery.discover(elastic_endpoint)
     # nodes = map(lambda x: {'host': x[1], 'port': x[2]}, nodes)
@@ -27,7 +26,7 @@ def get_redis():
         socket_connect_timeout=2
     )
 
-    print 'Started connection to Redis.'
+    print('Started connection to Redis.')
 
     return redis_conn
 
@@ -38,70 +37,69 @@ MATCH = 'cattle_image_id_*'
 LAMBDA_COUNT = 25
 
 
-def send_descriptor_to_redis(event, prefix, context):
+def get_descriptor_from_event(event, context, prefix=None):
     s3_info = event['Records'][0]['s3']
     s3_bucket = s3_info['bucket']['name']
     s3_key = s3_info['object']['key']
 
-    print 'Image put:', s3_bucket, s3_key
-    print 'Retrieving image from S3'
+    print('Image put:', s3_bucket, s3_key)
+    print('Retrieving image from S3')
     prt(context)
 
     s3_client = boto3.client('s3')
     image = s3_client.get_object(Bucket=s3_bucket, Key=s3_key)['Body'].read()
 
-    print 'Retrieved image from S3'
+    print('Retrieved image from S3')
     prt(context)
 
     id_ = s3_key.split('/')[-1].split('-')[0]
 
-    print 'Event ID:', id_
-    print 'Generating image desriptor'
+    print('Event ID:', id_)
+    print('Generating image descriptor')
     prt(context)
 
     image_array = read_base64(image)
     image_descriptor = generate_descriptor(image_array)
 
-    print 'Generated image descriptor. Sending to Redis.'
+    print('Generated image descriptor. Sending to Redis.')
     prt(context)
 
-    REDIS_CONN.set('%s%s' % (prefix, id_), kp_dumps(image_descriptor))
+    if prefix is not None:
+        REDIS_CONN.set('%s%s' % (prefix, id_), kp_dumps(image_descriptor))
 
-    print 'Sent to Redis successfully.'
+    print('Sent to Redis successfully.')
     prt(context)
+
+    return id_, image_descriptor
 
 
 def register_handler(event, context):
-    send_descriptor_to_redis(event, 'cattle_image_id_', context)
-    return { 'status': 'success' }
+    get_descriptor_from_event(event, context, prefix='cattle_image_id_')
+    return {'status': 'success'}
 
 
 def match_handler(event, context):
-    send_descriptor_to_redis(event, 'match_image_id_', context)
-    return { 'status': 'success' }
+    match_image_id, match_image_descriptor = get_descriptor_from_event(event, context)
+
+    aws_lambda = boto3.client('lambda')
+    iter_id = 0
+    while 1:
+        aws_lambda.invoke(
+            FunctionName='cowhub-image-compare',
+            InvocationType='Event',
+            Payload=json.dumps({
+                'iter_id': iter_id,
+                'match_image_id': match_image_id,
+                'match_image_descriptor': match_image_descriptor
+            })
+        )
+
+        iter_id, _ = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
+        if iter_id == 0:
+            break
+
+    return {'status': 'success'}
 
 
-# def compare_handler(event, context):
-#     key, image = get_image_from_s3(event)
-#
-#     iter_id = event['iter_id']
-#     image = event['image']
-#     image_descriptor = generate_descriptor(image)
-#
-#     _, keys = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=LAMBDA_COUNT)
-#
-#     def reducer((a_id, v), b_id):
-#         i = pickle.loads(REDIS_CONN.get(b_id))
-#         diff = calc_diff(image_descriptor, i)
-#
-#         if diff < v:
-#             return b_id, diff
-#         else:
-#             return a_id, v
-#
-#     image_id, value = reduce(reducer, keys, (None, float("inf")))
-#
-#     return {
-#         'image_id': image_id,
-#         'value': value
-#     }
+def compare_handler(event, context):
+    pass
