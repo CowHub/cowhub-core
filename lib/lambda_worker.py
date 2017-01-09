@@ -84,7 +84,7 @@ def match_handler(event, context):
     print('Invoking lambda comparisons...')
 
     iter_id = 0
-    count = 0
+    iter_count = 0
     while True:
         print('Invoking', iter_id)
         prt(context)
@@ -102,7 +102,7 @@ def match_handler(event, context):
             Body=json.dumps(message)
         )
 
-        count += 1
+        iter_count += 1
 
         print('Invocation', iter_id, 'success.')
         prt(context)
@@ -115,7 +115,7 @@ def match_handler(event, context):
     prt(context)
     r = requests.post(
         'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
-        data={'count': count})
+        data={'count': iter_count})
     print('Request sent API')
     prt(context)
     try_count = 1
@@ -124,7 +124,7 @@ def match_handler(event, context):
         print('Sending request to API')
         r = requests.post(
             'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
-            data={'count': count})
+            data={'count': iter_count})
         print('Request sent API')
         prt(context)
 
@@ -189,22 +189,34 @@ def compare_handler(event, context):
     print('Generated best match')
     prt(context)
 
+    print('Sending request to API')
+    prt(context)
     r = requests.post(
         'http://%s/cattle/match/%s/lambda' % (os.environ['API_IP_ADDRESS'], match_image_id),
-        data={'count': count})
+        data={
+            "image_id": best_match,
+            "value": best_value
+        })
+
+    print('Sent request')
+    prt(context)
 
     if r.status_code is 404:
         return { 'status': 'failed' }
 
     try_count = 1
     while try_count < 5 and not r.status_code is 200:
+        print('Sending request to API')
+        prt(context)
         r = requests.post(
-            'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
+            'http://%s/cattle/match/%s/lambda' % (os.environ['API_IP_ADDRESS'], match_image_id),
             data={
                 "image_id": best_match,
                 "value": best_value
             })
         try_count += 1
+        print('Sent request')
+        prt(context)
 
     return {
         'status': 'success' if r.status_code is 200 else 'failed'
