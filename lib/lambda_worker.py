@@ -87,6 +87,7 @@ def match_handler(event, context):
     count = 0
     while True:
         print('Invoking', iter_id)
+        prt(context)
 
         message = {
             'iter_id': iter_id,
@@ -104,19 +105,28 @@ def match_handler(event, context):
         count += 1
 
         print('Invocation', iter_id, 'success.')
+        prt(context)
 
         iter_id, _ = REDIS_CONN.scan(cursor=iter_id, match=MATCH, count=os.environ['LAMBDA_COUNT'])
         if iter_id == 0:
             break
 
+    print('Sending request to API')
+    prt(context)
     r = requests.post(
-        'http://api.cowhub.co.uk/match/%s/lambda/count' % match_image_id,
+        'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
         data={'count': count})
+    print('Request sent API')
+    prt(context)
     try_count = 1
     while try_count < 5 and not r.status_code is 200:
+        print('Request failed!')
+        print('Sending request to API')
         r = requests.post(
-            'http://api.cowhub.co.uk/match/%s/lambda/count' % match_image_id,
+            'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
             data={'count': count})
+        print('Request sent API')
+        prt(context)
 
     return {
         'status': 'success' if r.status_code is 200 else 'failed'
@@ -180,16 +190,21 @@ def compare_handler(event, context):
     prt(context)
 
     r = requests.post(
-        'http://api.cowhub.co.uk/match/%s/lambda' % match_image_id,
+        'http://%s/cattle/match/%s/lambda' % (os.environ['API_IP_ADDRESS'], match_image_id),
         data={'count': count})
+
+    if r.status_code is 404:
+        return { 'status': 'failed' }
+
     try_count = 1
     while try_count < 5 and not r.status_code is 200:
         r = requests.post(
-            'http://api.cowhub.co.uk/match/%s/lambda/count' % match_image_id,
+            'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
             data={
                 "image_id": best_match,
                 "value": best_value
             })
+        try_count += 1
 
     return {
         'status': 'success' if r.status_code is 200 else 'failed'
