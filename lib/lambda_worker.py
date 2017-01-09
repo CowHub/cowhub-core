@@ -116,20 +116,17 @@ def match_handler(event, context):
     r = requests.post(
         'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
         data={'count': iter_count})
-    print('Request sent API')
+
+    print('Sent request')
     prt(context)
-    try_count = 1
-    while try_count < 5 and is not r.status_code 200:
-        print('Request failed!')
-        print('Sending request to API')
-        r = requests.post(
-            'http://%s/cattle/match/%s/lambda/count' % (os.environ['API_IP_ADDRESS'], match_image_id),
-            data={'count': iter_count})
-        print('Request sent API')
-        prt(context)
 
     return {
-        'status': 'success' if r.status_code is 200 else 'failed'
+        'success': r.status_code is 200,
+        'response': {
+            'content': r.content,
+            'status_code': r.status_code,
+            'text': r.text
+        }
     }
 
 
@@ -201,23 +198,11 @@ def compare_handler(event, context):
     print('Sent request')
     prt(context)
 
-    if r.status_code is 404:
-        return { 'status': 'failed' }
-
-    try_count = 1
-    while try_count < 5 and not r.status_code is 200:
-        print('Sending request to API')
-        prt(context)
-        r = requests.post(
-            'http://%s/cattle/match/%s/lambda' % (os.environ['API_IP_ADDRESS'], match_image_id),
-            data={
-                "image_id": best_match,
-                "value": best_value
-            })
-        try_count += 1
-        print('Sent request')
-        prt(context)
-
     return {
-        'status': 'success' if r.status_code is 200 else 'failed'
+        'success': r.status_code is 200,
+        'response': {
+            'content': r.content,
+            'status_code': r.status_code,
+            'text': r.text
+        }
     }
