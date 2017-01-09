@@ -119,7 +119,7 @@ def match_handler(event, context):
     print('Request sent API')
     prt(context)
     try_count = 1
-    while try_count < 5 and not r.status_code is 200:
+    while try_count < 5 and is not r.status_code 200:
         print('Request failed!')
         print('Sending request to API')
         r = requests.post(
