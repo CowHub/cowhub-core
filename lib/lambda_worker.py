@@ -1,5 +1,5 @@
 from __future__ import print_function
-from utils import kp_dumps, kp_loads, prt, get_redis
+from utils import get_descriptor_from_event, kp_loads, prt, get_redis
 import os
 import json
 import requests
