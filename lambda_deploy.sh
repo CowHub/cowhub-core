@@ -4,6 +4,8 @@
 FUNCTION_REGISTER='cowhub-image-register'
 FUNCTION_MATCH='cowhub-image-match'
 FUNCTION_COMPARE='cowhub-image-compare'
+FUNCTION_REGISTER_DELETE='cowhub-image-register-delete'
+FUNCTION_MATCH_DELETE='cowhub-image-match-delete'
 S3_BUCKET="cowhub-lambda-functions"
 S3_KEY="cowhub-image-register/$RANDOM-$RANDOM-$RANDOM"
 
@@ -43,6 +45,16 @@ aws lambda update-function-code \
 aws lambda update-function-code \
     --region eu-west-1 \
     --function-name "$FUNCTION_COMPARE" \
+    --s3-bucket "$S3_BUCKET" \
+    --s3-key "$S3_KEY"
+aws lambda update-function-code \
+    --region eu-west-1 \
+    --function-name "$FUNCTION_REGISTER_DELETE" \
+    --s3-bucket "$S3_BUCKET" \
+    --s3-key "$S3_KEY"
+aws lambda update-function-code \
+    --region eu-west-1 \
+    --function-name "$FUNCTION_MATCH_DELETE" \
     --s3-bucket "$S3_BUCKET" \
     --s3-key "$S3_KEY"
 

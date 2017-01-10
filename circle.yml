@@ -34,3 +34,18 @@ deployment:
             --function-name cowhub-image-match \
             --s3-bucket $S3_BUCKET \
             --s3-key $S3_KEY
+        aws lambda update-function-code \
+            --region eu-west-1 \
+            --function-name cowhub-image-compare \
+            --s3-bucket $S3_BUCKET \
+            --s3-key $S3_KEY
+        aws lambda update-function-code \
+            --region eu-west-1 \
+            --function-name cowhub-image-register-delete \
+            --s3-bucket $S3_BUCKET \
+            --s3-key $S3_KEY
+        aws lambda update-function-code \
+            --region eu-west-1 \
+            --function-name cowhub-image-match-delete \
+            --s3-bucket $S3_BUCKET \
+            --s3-key $S3_KEY
